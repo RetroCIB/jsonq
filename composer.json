@@ -1,0 +1,15 @@
+{
+  "name": "soilphp/jsonq",
+  "type": "library",
+  "description": "Simple PHP library that provides SQL-like style API for JSON data",
+  "keywords": ["json", "api", "sql-like"],
+  "minimum-stability": "dev",
+  "version": "1.0.0-dev",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Taras Chornyi",
+      "email": "taras.chornyi@ukr.net"
+    }
+  ]
+}
