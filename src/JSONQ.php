@@ -2,25 +2,10 @@
 
 namespace SoilPHP\Tools;
 
-/*
- * Library for using JSON data in SQL-like style
- */
-
 class JSONQ
 {
-    /*
-     * Link to file
-     */
     private $link;
-
-    /*
-     * Original array
-     */
     private $raw = [];
-
-    /*
-     * Available commands
-     */
     private $commands = [
         'select' => '',
         'from' => '',
@@ -31,15 +16,7 @@ class JSONQ
         'has' => [],
         'join' => '',
     ];
-
-    /*
-     * Stored changed data
-     */
     private $data = [];
-
-    /*
-     * Query status
-     */
     protected $exec = false;
 
     /**
@@ -49,17 +26,14 @@ class JSONQ
      */
     public function __construct(string $path)
     {
-        if(!file_get_contents($path))
-        {
+        if(!file_get_contents($path)) {
             throw new \Exception('JSON file not found');
         }
-        else
-        {
+        else {
             $raw = json_decode(file_get_contents($path), true);
             if($raw === false)
                 throw new \Exception('Loaded file is not JSON');
-            else
-            {
+            else {
                 $this->link = $path;
                 $this->raw = $raw;
             }
@@ -219,7 +193,7 @@ class JSONQ
         $json = json_encode($this->runQuery());
 
         if(file_put_contents($this->link, $json) === false)
-            throw new \Exception('This file cannot be updated');
+            return false;
         else
             return true;
 
@@ -250,23 +224,18 @@ class JSONQ
 
         preg_match_all('/\[\"([A-z0-9_\-]+)\"\]/', $query, $matches);
 
-        if (empty($matches))
-        {
+        if (empty($matches)) {
             return false;
         }
 
         $currentData = $data;
-        foreach ($matches[1] as $name)
-        {
+        foreach ($matches[1] as $name) {
             $name = trim($name);
-            if (array_key_exists($name, $currentData))
-            {
+            if (array_key_exists($name, $currentData)) {
                 $currentData = $currentData[$name];
             }
             else
-            {
                 return false;
-            }
         }
         return $currentData;
     }
@@ -281,13 +250,9 @@ class JSONQ
     public function findInArray($key, $value, $sign, $data)
     {
         $result = [];
-//        var_dump(isset($data[$key]));
-        if(isset($data[$key]))
-        {
-            if(is_numeric($value))
-            {
-                switch ($sign)
-                {
+        if(isset($data[$key])) {
+            if(is_numeric($value))  {
+                switch ($sign) {
                     default:
                     case '=':
                         if($data[$key] === $value)
@@ -315,13 +280,9 @@ class JSONQ
                         break;
                 }
             }
-            else
-            {
-                if($data[$key] === $value)
+            else if($data[$key] === $value)
                     $result[] = $data;
-            }
         }
-
         return $result;
     }
 
@@ -330,39 +291,29 @@ class JSONQ
      */
     public function query()
     {
-//        var_dump($this->commands);
         if(empty($this->raw))
             $data = $this->raw;
         else
             $data = $this->data;
 
-        if($this->commands['from'] !== '')
-        {
+        if($this->commands['from'] !== '') {
             $from = explode(',', $this->commands['from']);
             $fromRes = [];
 
-            foreach ($from as $field)
-            {
+            foreach ($from as $field) {
                 $fromRes = array_merge_recursive($fromRes, $this->extractData($field, $data));
             }
-
             $data = $fromRes;
-
         }
 
-
-        if($this->commands['select'] !== '')
-        {
+        if($this->commands['select'] !== ''){
             $select = explode(',', $this->commands['select']);
             $selectRes = [];
 
-            foreach ($select as $field)
-            {
-                if($this->commands['from'] === '' || $this->exec === true && count($data) > 1)
-                {
+            foreach ($select as $field) {
+                if($this->commands['from'] === '' || $this->exec === true && count($data) > 1) {
 //                    $mergeRes = [];
-                    foreach ($data as $item)
-                    {
+                    foreach ($data as $item) {
                         $selectRes[$field][] = $this->extractData($field, $item);
                     }
                 }
@@ -375,32 +326,22 @@ class JSONQ
             $this->commands['from'] = '';
         }
 
-                /*if($this->exec === true)
-            var_dump($data);*/
-
         if(!empty($this->commands['join']))
             $data = array_merge($data, $this->extractData($this->commands['join'], $this->raw));
 
-        if(!empty($this->commands['where']) && is_array($this->commands['where']))
-        {
+        if(!empty($this->commands['where']) && is_array($this->commands['where'])) {
             $result = [];
-            foreach ($this->commands['where'] as $where)
-            {
+            foreach ($this->commands['where'] as $where) {
                 $keys = explode('.', $where['key']);
                 $key = array_pop($keys);
-                foreach($data as $wData)
-                {
-//                    var_dump($where['key'], $wData);
-                    if($this->extractData($where['key'], $wData) !== false)
-                    {
+                foreach($data as $wData) {
+                    if($this->extractData($where['key'], $wData) !== false)                     {
                         $whereData = $this->extractData($where['key'], $wData);
                         if(!is_array($whereData))
                             $whereData = $this->extractData(implode('.', $keys), $wData);
                     }
                     else
                         $whereData = $wData;
-
-//                    var_dump($this->findInArray($key,  $where['value'], $where['sign'], $whereData));
 
                     $result = array_merge($result, $this->findInArray($key,  $where['value'], $where['sign'], $whereData));
                 }
@@ -409,18 +350,14 @@ class JSONQ
             $data = $result;
         }
 
-        if(!empty($this->commands['has']) && is_array($this->commands['has']))
-        {
+        if(!empty($this->commands['has']) && is_array($this->commands['has'])) {
             $result = [];
-            foreach ($this->commands['has'] as $has)
-            {
+            foreach ($this->commands['has'] as $has) {
                 $fields = explode('.', $has['field']);
                 $field = array_pop($fields);
 
-                foreach ($data as $hData)
-                {
-                    if($this->extractData($has['field'], $hData) !== false)
-                    {
+                foreach ($data as $hData) {
+                    if($this->extractData($has['field'], $hData) !== false) {
                         $hasData = $this->extractData($has['field'], $hData);
                         if(!is_array($hasData))
                             $hasData = $this->extractData(implode('.', $fields), $hData);
@@ -428,8 +365,7 @@ class JSONQ
                     else
                         $hasData = $hData;
 
-                    if(is_array($hasData[$field]) && in_array($has['needle'], $hasData[$field]) || !is_array($hasData[$field]) &&  strpos($hasData[$field], $has['needle']))
-                    {
+                    if(is_array($hasData[$field]) && in_array($has['needle'], $hasData[$field]) || !is_array($hasData[$field]) &&  strpos($hasData[$field], $has['needle'])) {
                         $result = array_merge($result, [$hasData]);
                     }
                 }
@@ -437,10 +373,8 @@ class JSONQ
             $data = $result;
         }
 
-        if(!empty($this->commands['update']) && is_array($this->commands['update']))
-        {
-            foreach ($this->commands['update'] as $key => $value)
-            {
+        if(!empty($this->commands['update']) && is_array($this->commands['update'])) {
+            foreach ($this->commands['update'] as $key => $value) {
 //                $key = (is_numeric($key) ? (float) $key : filter_var($key, FILTER_SANITIZE_STRING));
                 $value = (is_numeric($value) ? (float) $value : filter_var($value, FILTER_SANITIZE_STRING));
 
@@ -451,10 +385,8 @@ class JSONQ
             }
         }
 
-        if(!empty($this->commands['insert']) && is_array($this->commands['insert']))
-        {
-            foreach ($this->commands['insert'] as $key => $value)
-            {
+        if(!empty($this->commands['insert']) && is_array($this->commands['insert'])) {
+            foreach ($this->commands['insert'] as $key => $value) {
 //                $key = (is_numeric($key) ? (float) $key : filter_var($key, FILTER_SANITIZE_STRING));
                 $value = (is_numeric($value) ? (float) $value : filter_var($value, FILTER_SANITIZE_STRING));
 
