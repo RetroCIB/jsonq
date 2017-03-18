@@ -2,22 +2,44 @@
 
 namespace SoilPHP\Tools;
 
+/*
+ * Library for using JSON data in SQL-like style
+ */
 
 class JSONQ
 {
+    /*
+     * Link to file
+     */
     private $link;
+
+    /*
+     * Original array
+     */
     private $raw = [];
+
+    /*
+     * Available commands
+     */
     private $commands = [
         'select' => '',
         'from' => '',
         'where' => [],
         'update' => [],
         'insert' => [],
-        'delete' => '',
+//        'delete' => '',
         'has' => [],
         'join' => '',
     ];
+
+    /*
+     * Stored changed data
+     */
     private $data = [];
+
+    /*
+     * Query status
+     */
     protected $exec = false;
 
     /**
