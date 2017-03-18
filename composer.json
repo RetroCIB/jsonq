@@ -6,9 +6,12 @@
   "minimum-stability": "dev",
   "version": "1.0.0-dev",
   "license": "MIT",
+  "require": {
+    "php": "^7.0"
+  },
   "authors": [
     {
-      "name": "Taras Chornyi", 
+      "name": "Taras Chornyi",
       "email": "taras.chornyi@ukr.net"
     }
   ]
