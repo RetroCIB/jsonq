@@ -19,5 +19,8 @@ $result = $data->getAll();
 ## Requirements
 PHP7+
 
+## Installing
+JSONQ can be installed via Composer
+
 ## License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
