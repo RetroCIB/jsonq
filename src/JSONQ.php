@@ -97,6 +97,14 @@ class JSONQ
     }
 
     /**
+     * @return array|mixed
+     */
+    public function getOriginal()
+    {
+        return $this->raw;
+    }
+
+    /**
      * @return array|bool|mixed
      */
     public function getAll()
